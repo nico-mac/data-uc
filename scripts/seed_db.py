@@ -20,7 +20,8 @@ initialize_log()
 create_db(clean=False)  # clean resetea la BD
 
 # Remove production flag
-sys.argv.remove("-p")
+if "-p" in sys.argv:
+    sys.argv.remove("-p")
 
 with Session(engine) as session:
     init_time = time()
