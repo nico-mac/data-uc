@@ -1,4 +1,5 @@
 import enum
+from datetime import datetime
 from typing import List, Optional
 
 from sqlalchemy import Column
@@ -99,6 +100,7 @@ class Course(SQLModel, table=True):  # type: ignore  # noqa
     Represents a course from Buscacursos."""
 
     id: Optional[int] = Field(default=None, primary_key=True)
+    updated_at: Optional[datetime] = Field(default_factory=datetime.utcnow)
     subject_id: Optional[int] = Field(default=None, foreign_key="subject.id")
     subject: Subject = Relationship(back_populates="courses")
     term_id: Optional[int] = Field(default=None, foreign_key="term.id")
@@ -117,6 +119,7 @@ class Course(SQLModel, table=True):  # type: ignore  # noqa
     schedule: List["ClassSchedule"] = Relationship(back_populates="course")
     available_quota: Optional[int]
     total_quota: Optional[int]
+    teachers_summary: Optional[str]
     teachers: List["Teacher"] = Relationship(back_populates="courses", link_model=CoursesTeachers)
 
 
