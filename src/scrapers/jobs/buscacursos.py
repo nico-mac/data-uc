@@ -1,4 +1,5 @@
 from typing import Dict, Optional, Set, Union
+import json
 
 from sqlmodel import Session, delete, select
 
@@ -109,33 +110,39 @@ async def search_bc_code(
                     campus_id = campus.id
                 course.campus_id = campus_id
 
-                # Set Teachers
-                if course.id is not None:
-                    db_session.exec(
-                        delete(CoursesTeachers).where(CoursesTeachers.course_id == course.id)
-                    )
-                teachers = []
-                for teacher_name in c["teachers"]:
-                    teacher = db_session.exec(
-                        select(Teacher).where(Teacher.name == teacher_name)
-                    ).one_or_none()
-                    if not teacher:
-                        teacher = Teacher(name=teacher_name)
-                        try:
-                            db_session.add(teacher)
-                            db_session.commit()
-                        except Exception:
-                            log.error("Cannot save teacher: %s", teacher_name, exc_info=True)
-                            errors.add(c["code"])
-                            db_session.rollback()
-                            continue
+                # Set Teachers (if changed or new)
+                new_teachers_summary = ", ".join(c["teachers"])
+                if course.teachers_summary != new_teachers_summary or True:
+                    course.teachers_summary = new_teachers_summary
 
-                        teachers.append(teacher)
-                course.teachers = teachers
+                    if course.id is not None:
+                        db_session.exec(
+                            delete(CoursesTeachers).where(CoursesTeachers.course_id == course.id)
+                        )
+                    teachers = []
+                    for teacher_name in set(c["teachers"]):
+                        teacher = db_session.exec(
+                            select(Teacher).where(Teacher.name == teacher_name)
+                        ).one_or_none()
+                        if not teacher:
+                            teacher = Teacher(name=teacher_name)
+                            try:
+                                db_session.add(teacher)
+                                db_session.commit()
+                                teachers.append(teacher)
+                            except Exception:
+                                log.error("Cannot save teacher: %s", teacher_name, exc_info=True)
+                                errors.add(c["code"])
+                                db_session.rollback()
+                                continue
+                        else:
+                            teachers.append(teacher)
+                    course.teachers = teachers
 
-                # Set schedule if changed (or new)
-                if course.schedule_summary != str(c["schedule"]):
-                    course.schedule_summary = str(c["schedule"])
+                # Set schedule (if changed or new)
+                new_schedule_summary = json.dumps(c["schedule"]["compact"])
+                if course.schedule_summary != new_schedule_summary or True:
+                    course.schedule_summary = new_schedule_summary
 
                     if course.id is not None:
                         db_session.exec(
@@ -143,7 +150,7 @@ async def search_bc_code(
                         )
 
                     schedule_list = []
-                    for schedule_part_data in c["schedule"]:
+                    for schedule_part_data in c["schedule"]["full"]:
                         day, module = schedule_part_data["module"]
                         schedule_part = ClassSchedule(
                             day=DayEnum(day),
@@ -151,7 +158,16 @@ async def search_bc_code(
                             classroom=schedule_part_data["classroom"],
                             type=schedule_part_data["type"],
                         )
-                        schedule_list.append(schedule_part)
+                        try:
+                            db_session.add(schedule_part)
+                            db_session.commit()
+                            schedule_list.append(schedule_part)
+                        except Exception:
+                            log.error("Cannot save schedule part: %s", schedule_part, exc_info=True)
+                            errors.add(c["code"])
+                            db_session.rollback()
+                            continue
+
                     course.schedule = schedule_list
 
                 # Save to DB and cache
