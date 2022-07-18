@@ -1,8 +1,9 @@
+from datetime import datetime
 from typing import List, Optional
 
 from sqlmodel import SQLModel
 
-from ..db import Campus, ClassSchedule, Teacher
+from ..db import Campus, ClassSchedule
 
 
 class TermMinimal(SQLModel):
@@ -12,6 +13,10 @@ class TermMinimal(SQLModel):
 
 class SchoolMinimal(SQLModel):
     id: int
+    name: str
+
+
+class TeacherMinimal(SQLModel):
     name: str
 
 
@@ -58,14 +63,16 @@ class CourseResponse(SQLModel):
     section: int
     nrc: str
     schedule_summary: Optional[str]
+    schedule: List[ClassSchedule]
     campus: Campus
     available_quota: Optional[int]
     total_quota: Optional[int]
-    teachers: List[Teacher]
+    teachers: List[TeacherMinimal]
 
 
 class CourseFullResponse(SQLModel):
     id: int
+    updated_at: Optional[datetime]
     subject: SubjectResponse
     term: TermMinimal
     section: int
@@ -81,4 +88,4 @@ class CourseFullResponse(SQLModel):
     schedule: List[ClassSchedule]
     available_quota: Optional[int]
     total_quota: Optional[int]
-    teachers: List[Teacher]
+    teachers: List[TeacherMinimal]
