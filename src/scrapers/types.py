@@ -24,6 +24,11 @@ class ScheduleItem(TypedDict):
     type: str
 
 
+class Schedule(TypedDict):
+    full: List[ScheduleItem]  # Individual entry for each module/day
+    compact: List[ScheduleItem]  # Compacts modules across days (like L-M:2-3)
+
+
 class ScrappedCourse(TypedDict):
     academic_unit: str
     allows_withdraw: bool
@@ -40,7 +45,7 @@ class ScrappedCourse(TypedDict):
     ncr: str
     requires_special_approval: bool
     reserved_vacancy: str
-    schedule: List[ScheduleItem]
+    schedule: Schedule
     section: int
     teachers: List[str]
     total_vacancy: int

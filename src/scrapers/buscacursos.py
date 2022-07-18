@@ -35,11 +35,8 @@ ACADEMIC_UNIT_FINDER = {"attrs": {"style": None, "class": None}, "text": NON_EMP
 MISSING_CLASSROM_RE = re.compile(r"\(?Por Asignar\(?")
 
 
-def parse_schedule_row(row: bs4.element.Tag):
-    packed_data: List[str] = [r.text.strip() for r in row.find_all("td")]
-    module_schedule, module_type, classroom, *_ = packed_data
+def expand_schedule(module_schedule: str, module_type: str, classroom: str):
     days_raw, hours_raw = module_schedule.split(":")
-
     if not (days_raw and hours_raw):
         return []
 
@@ -53,11 +50,20 @@ def parse_schedule_row(row: bs4.element.Tag):
 
 def parse_schedule(row_value_tag: bs4.element.Tag):
     schedule_table = row_value_tag.find("table")
-    schedule = []
+    schedule_full = []
+    schedule_compact = []
     if isinstance(schedule_table, bs4.element.Tag):
         for module_row in schedule_table.find_all("tr"):
-            schedule.extend(parse_schedule_row(module_row))
-        return schedule
+            packed_data: List[str] = [r.text.strip() for r in module_row.find_all("td")]
+            module_schedule, module_type, classroom, *_ = packed_data
+
+            schedule_compact.append({"classroom": classroom, "type": module_type, "module": module_schedule})
+            schedule_full.extend(expand_schedule(module_schedule, module_type, classroom))
+
+        return {
+            "full": schedule_full,
+            "compact": schedule_compact,
+        }
 
 
 MISSING_TEACHERS_RE = re.compile(r"Sin Profesores")
@@ -82,10 +88,10 @@ def parse_teachers(row_value_tag: bs4.element.Tag):
 COLUMNS_STRATEGIES: "ParseStrategy" = {
     "ncr": clean_text,
     "code": clean_text,
-    "allows_withdraw": lambda n: clean_text(n) == "SI",
-    "is_in_english": lambda n: clean_text(n) == "SI",
+    "allows_withdraw": lambda n: clean_text(n).upper() == "SI",
+    "is_in_english": lambda n: clean_text(n).upper() == "SI",
     "section": tag_to_int_value,
-    "requires_special_approval": lambda n: clean_text(n) == "SI",
+    "requires_special_approval": lambda n: clean_text(n).upper() == "SI",
     "fg_area": clean_text,
     "format": clean_text,
     "category": clean_text,
