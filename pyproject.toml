@@ -9,10 +9,10 @@ authors = ["Your Name <you@example.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.9"
-sqlmodel = {extras = ["psycopg2"], version = "^0.0.6"}
+sqlmodel = {extras = ["psycopg2"], version = "^0.0.8"}
 psycopg2 = "^2.9.1"
-fastapi = "^0.70.0"
-strawberry-graphql = "^0.85.0"
+fastapi = "^0.88.0"
+strawberry-graphql = "^0.151.0"
 fastapi-pagination = {extras = ["SQLAlchemy"], version = "^0.9.0"}
 mkdocs-material = "^7.3.4"
 mkdocs-git-revision-date-localized-plugin = "^0.10.0"
@@ -23,12 +23,11 @@ lxml = "^4.6.3"
 aiohttp = {extras = ["speedups"], version = "^3.8.1"}
 aiohttp-client-cache = {extras = ["sqlite"], version = "^0.5.2"}
 sympy = "^1.10.1"
-SQLAlchemy = ">=1.4.17,<=1.4.35"
 
 [tool.poetry.dev-dependencies]
 black = "^22.6.0"
 mypy = "^0.961"
-strawberry-graphql = {extras = ["debug-server"], version = "^0.85.0"}
+strawberry-graphql = {extras = ["debug-server"], version = "^0.151.0"}
 pytest = "^6.2.5"
 pre-commit = "^2.19.0"
 
