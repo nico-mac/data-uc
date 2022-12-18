@@ -6,6 +6,7 @@ from .graphql import graphql_app
 from .routes.campus import campus_router
 from .routes.courses import course_router
 from .routes.events import event_router
+from .routes.filters import filters_router
 from .routes.places import place_router
 from .routes.schools import school_router
 from .routes.subject import subject_router
@@ -16,6 +17,9 @@ app = FastAPI(root_path=str(config.api_base_path))
 
 app.include_router(graphql_app, prefix="/graphql", tags=["GraphQL"])
 
+app.include_router(
+    filters_router, prefix="/filters", tags=["Filters", "Categories", "Formats", "Areas"]
+)
 app.include_router(course_router, prefix="/courses", tags=["Courses"])
 app.include_router(campus_router, prefix="/campuses", tags=["Campuses"])
 app.include_router(event_router, prefix="/events", tags=["Events"])
