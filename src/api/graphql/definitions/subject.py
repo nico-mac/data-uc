@@ -8,7 +8,7 @@ from ....db import Subject, engine
 # TODO: add pagination
 
 
-@strawberry.experimental.pydantic.type(model=Subject, fields=["id", "name", "initials"])
+@strawberry.experimental.pydantic.type(model=Subject, fields=["id", "name", "code"])
 class GQLSubject:
     pass
 
